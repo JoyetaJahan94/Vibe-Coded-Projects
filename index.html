@@ -1,0 +1,403 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tribute to 200 Years of Tech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --glitch-color: #00ff41;
+            --hacker-green: #00ff41;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'JetBrains+Mono', monospace;
+            color: white;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Scanline / Old TV Effect */
+        #scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(32, 32, 32, 0.2) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.02),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.02)
+            );
+            background-size: 100% 4px, 3px 100%;
+            z-index: 15;
+            pointer-events: none;
+            display: none; /* Hidden during intro */
+        }
+
+        /* Intro Terminal Overlay */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10%;
+            box-sizing: border-box;
+        }
+
+        .terminal-line {
+            font-size: 1.2rem;
+            color: var(--hacker-green);
+            margin-bottom: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: .15em solid orange;
+            animation: typing 1s steps(40, end), blink-caret .75s step-end infinite;
+            display: none;
+        }
+
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--hacker-green) } }
+
+        /* Hacker Glitch Overlay */
+        #glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
+
+        .glitch-bar {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--glitch-color);
+            opacity: 0.5;
+        }
+
+        /* Content Layer */
+        #main-ui {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Top Static Label */
+        .top-archive-label {
+            color: #888;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+            font-family: 'JetBrains+Mono', monospace;
+        }
+
+        .header-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--hacker-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+        }
+
+        .tap-msg {
+            color: #888;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            margin-bottom: -10px;
+            font-family: 'JetBrains+Mono', monospace;
+        }
+
+        .center-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22rem; 
+            font-weight: 900;
+            line-height: 0.85; 
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+            pointer-events: none; 
+        }
+
+        .page-title {
+            font-family: 'JetBrains+Mono', monospace;
+            font-size: 2.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 3px solid white;
+            display: inline-block;
+            padding-bottom: 5px;
+            line-height: 1.1;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .description-box {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 450px;
+            max-height: 25vh; 
+            overflow-y: auto;
+            padding: 15px;
+            text-align: left;
+            border-radius: 8px;
+            margin-bottom: 70px; 
+            box-shadow: 0 0 30px rgba(0,0,0,1);
+            font-family: 'JetBrains+Mono', monospace;
+            pointer-events: auto;
+            position: relative;
+            z-index: 20; /* Ensure box is above scanlines for clarity */
+        }
+
+        .desc-item {
+            margin-bottom: 25px;
+        }
+
+        .desc-name {
+            font-weight: 800;
+            text-decoration: underline;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            color: var(--hacker-green);
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+        }
+
+        /* Scrollbar styling */
+        .description-box::-webkit-scrollbar {
+            width: 4px;
+        }
+        .description-box::-webkit-scrollbar-track {
+            background: #000;
+        }
+        .description-box::-webkit-scrollbar-thumb {
+            background: #444;
+        }
+
+        @media (max-width: 480px) {
+            .center-number { font-size: 15rem; margin-top: 10px; }
+            .page-title { font-size: 1.6rem; }
+            .header-title { font-size: 0.9rem; }
+            .terminal-line { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div class="terminal-line" id="line-1">loading past.archive.exe...</div>
+        <div class="terminal-line" id="line-2">loading mind_repository.sys...</div>
+        <div class="terminal-line" id="line-3">syncing era_clock [200_YEARS]...</div>
+        <div class="terminal-line" id="line-4">initializing future.collab...</div>
+        <div class="terminal-line" id="line-5">ACCESS GRANTED.</div>
+    </div>
+
+    <!-- The TV Scanline Effect Layer -->
+    <div id="scanlines"></div>
+    <div id="glitch-overlay"></div>
+
+    <div id="main-ui" onclick="handleNavigation(event)">
+        <div class="w-full">
+            <div class="top-archive-label">Chronological Archive</div>
+            <div class="header-title">Tribute to 200 Years of Tech</div>
+        </div>
+        
+        <div class="tap-msg">Tap Left or Right to Navigate</div>
+
+        <div class="flex flex-col items-center justify-center flex-grow pointer-events-none">
+            <div id="display-number" class="center-number">5</div>
+            <div id="page-title" class="page-title">Minds that Defined tech</div>
+        </div>
+
+        <div class="w-full flex flex-col items-center">
+            <div class="description-box" id="desc-box" onclick="event.stopPropagation()">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 5;
+        let isIntroRunning = true;
+
+        const pages = {
+            5: {
+                title: "Minds that Defined tech",
+                items: [
+                    { name: "Charles Babbage", text: "Designed the 'Analytical Engine,' the world’s first concept for a general-purpose computer." },
+                    { name: "Ada Lovelace", text: "Wrote the first algorithm intended for a machine, becoming the world's first computer programmer." },
+                    { name: "Alan Turing", text: "Cracked the Enigma code and defined the 'Turing Machine,' the theoretical model for all modern computers." },
+                    { name: "Grace Hopper", text: "A pioneer of computer programming who invented the first compiler and led the development of COBOL." },
+                    { name: "Hedy Lamarr", text: "Co-invented the frequency-hopping technology that serves as the essential foundation for modern Wi-Fi and Bluetooth." }
+                ]
+            },
+            4: {
+                title: "Years that Changed tech",
+                items: [
+                    { name: "1945", text: "The unveiling of ENIAC, the first programmable, electronic, general-purpose digital computer." },
+                    { name: "1969", text: "The birth of ARPANET (the precursor to the Internet) and the Moon Landing, proving the power of networked computing." },
+                    { name: "1989", text: "Tim Berners-Lee invented the World Wide Web, creating the global information-sharing system we use today." },
+                    { name: "2007", text: "The launch of the iPhone, which revolutionized the world by moving powerful computing from desks to our pockets." }
+                ]
+            },
+            3: {
+                title: "Giants that Revolutionized tech",
+                items: [
+                    { name: "Bell Labs", text: "The legendary R&D lab that gave the world the transistor, the Unix operating system, and the C programming language." },
+                    { name: "IBM", text: "The 'Big Blue' that pioneered mainframes and set the global standard for the Personal Computer (PC)." },
+                    { name: "Google", text: "Revolutionized the digital world by organizing humanity's information and scaling the modern web." }
+                ]
+            },
+            2: {
+                title: "Languages that Shifted tech",
+                items: [
+                    { name: "Assembly", text: "The low-level bridge that allowed humans to communicate directly with a computer's hardware." },
+                    { name: "C", text: "The high-level language that became the bedrock for almost all modern software and operating systems." }
+                ]
+            },
+            1: {
+                title: "Future Awaiting Tech",
+                items: [
+                    { name: "AI", text: "Artificial Intelligence acts as the bridge between human intent and machine execution. It promises a world where technology doesn't just process data, but understands and creates with us. This is the era of collaboration, where our tools become our partners, our computers become collaborators in solving the impossible." },
+                    { name: "The Tribute", text: "Thank you to all the collaborators who gave us this next chapter (AI) in tech." }
+                ]
+            }
+        };
+
+        function triggerGlitch(callback) {
+            const overlay = document.getElementById('glitch-overlay');
+            overlay.style.display = 'block';
+            overlay.innerHTML = '';
+            
+            for(let i=0; i<15; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'glitch-bar';
+                bar.style.top = Math.random() * 100 + '%';
+                bar.style.height = Math.random() * 80 + 'px';
+                overlay.appendChild(bar);
+            }
+
+            setTimeout(() => {
+                if(callback) callback();
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 100);
+            }, 100);
+        }
+
+        function updatePage() {
+            const data = pages[currentPage];
+            document.getElementById('display-number').innerText = currentPage;
+            document.getElementById('page-title').innerText = data.title;
+            
+            const descBox = document.getElementById('desc-box');
+            descBox.innerHTML = '';
+            
+            let contentHtml = '';
+            for (const item of data.items) {
+                contentHtml += `
+                    <div class="desc-item">
+                        <span class="desc-name">${item.name}</span>
+                        <p class="text-sm leading-relaxed">${item.text}</p>
+                    </div>
+                `;
+            }
+            descBox.innerHTML = contentHtml;
+            descBox.scrollTop = 0;
+        }
+
+        async function runIntro() {
+            isIntroRunning = true;
+            document.getElementById('intro-screen').style.display = 'flex';
+            document.getElementById('scanlines').style.display = 'none';
+            document.getElementById('main-ui').style.opacity = '0';
+            
+            const lines = ["line-1", "line-2", "line-3", "line-4", "line-5"];
+            lines.forEach(id => document.getElementById(id).style.display = 'none');
+            
+            for (const id of lines) {
+                const el = document.getElementById(id);
+                el.style.display = "block";
+                await new Promise(r => setTimeout(r, 1200));
+            }
+            await new Promise(r => setTimeout(r, 500));
+            
+            triggerGlitch(() => {
+                document.getElementById('intro-screen').style.display = 'none';
+                document.getElementById('scanlines').style.display = 'block';
+                document.getElementById('main-ui').style.opacity = '1';
+                isIntroRunning = false;
+                updatePage();
+            });
+        }
+
+        function handleNavigation(e) {
+            if (isIntroRunning) return;
+
+            const clickX = e.clientX;
+            const screenWidth = window.innerWidth;
+
+            if (clickX > screenWidth / 2) {
+                // Right side click: Go forward
+                triggerGlitch(() => {
+                    currentPage--;
+                    if (currentPage < 1) currentPage = 5;
+                    updatePage();
+                });
+            } else {
+                // Left side click: Go backward
+                triggerGlitch(() => {
+                    currentPage++;
+                    if (currentPage > 5) currentPage = 1;
+                    updatePage();
+                });
+            }
+        }
+
+        window.onload = () => {
+            runIntro();
+        };
+    </script>
+</body>
+</html>
+
+```
